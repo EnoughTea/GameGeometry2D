@@ -29,7 +29,7 @@ using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace GameGeometry2D {
-    [DataContract(Name = "bPoly", Namespace = "")]
+    [DataContract(Name = "bPoly", Namespace = ""), KnownType(typeof(Vector2))]
     public sealed class BoundingPolygon : IEquatable<BoundingPolygon> {
         public BoundingPolygon(Vector2[] vertices) {
             Contract.Requires(vertices != null);
@@ -38,6 +38,7 @@ namespace GameGeometry2D {
             _vertices = vertices;
         }
 
+        [DataMember(Name = "vs", EmitDefaultValue = false)]
         private Vector2[] _vertices;
 
         public Vector2[] Vertices {
@@ -349,33 +350,6 @@ namespace GameGeometry2D {
             GetDistance(vertices, ref point, out result);
             return result;
         }
-
-        //public static void GetDistance(Vector2[] vertices, ref Vector2 point, out float result)
-        //{
-        //    Contract.Requires(vertices != null);
-        //    Contract.Requires(vertices.Length > 2);
-        //    float distance1, distance2;
-        //    int nearestIndex = 0;
-        //    Vectors2.DistanceSq(ref point, ref vertices[0], out distance1);
-        //    for (int index = 1; index < vertices.Length; ++index)
-        //    {
-        //        Vectors2.DistanceSq(ref point, ref vertices[index], out distance2);
-        //        if (distance1 > distance2)
-        //        {
-        //            nearestIndex = index;
-        //            distance1 = distance2;
-        //        }
-        //    }
-        //    Vector2 prev = vertices[(nearestIndex - 1 + vertices.Length) % vertices.Length];
-        //    Vector2 good = vertices[nearestIndex];
-        //    Vector2 next = vertices[(nearestIndex + 1) % vertices.Length];
-        //    LineSegment.GetDistance(ref prev, ref good, ref point, out distance1);
-        //    LineSegment.GetDistance(ref good, ref next, ref point, out distance2);
-        //    result = Math.Min(distance1, distance2);
-        //    ContainmentType contains;
-        //    ContainsExclusive(vertices, ref point, out contains);
-        //    if (contains == ContainmentType.Contains) { result = -result; }
-        //}
 
         public static void GetDistance(Vector2[] vertices, ref Vector2 point, out float result) {
             Contract.Requires(vertices != null);

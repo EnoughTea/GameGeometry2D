@@ -31,35 +31,33 @@ using Microsoft.Xna.Framework;
 
 namespace GameGeometry2D {
     /// <summary>Axis-aligned bounding rectangle.</summary>
-    [StructLayout(LayoutKind.Sequential, Size = Size), DataContract(Name = "aabb", Namespace = "")]
+    [StructLayout(LayoutKind.Sequential, Size = ByteSize), DataContract(Name = "aabb", Namespace = ""), 
+    KnownType(typeof(Vector2))]
     public struct BoundingRectangle : IEquatable<BoundingRectangle> {
-        public const int Size = (sizeof(float) * 2) * 2;
+        public const int ByteSize = (sizeof(float) * 2) * 2;
 
         /// <summary> Empty bounding rectangle (point at coordinate system origin). </summary>
         public static readonly BoundingRectangle Empty = new BoundingRectangle(0, 0, 0, 0);
 
-        /// <summary>
-        ///     Creates a new BoundingRectangle Instance.
-        /// </summary>
-        /// <param name="minX">The Lower Bound on the XAxis.</param>
-        /// <param name="minY">The Lower Bound on the YAxis.</param>
-        /// <param name="maxX">The Upper Bound on the XAxis.</param>
-        /// <param name="maxY">The Upper Bound on the YAxis.</param>
+        /// <summary>Initializes a new instance of the <see cref="BoundingRectangle"/> struct.</summary>
+        /// <param name="minX">The lower bound on the X axis.</param>
+        /// <param name="minY">The lower bound on the Y axis.</param>
+        /// <param name="maxX">The upper bound on the X axis.</param>
+        /// <param name="maxY">The upper bound on the Y axis.</param>
         public BoundingRectangle(float minX, float minY, float maxX, float maxY) {
+            NumberTools.Sort(ref minX, ref maxX, out minX, out maxX);
+            NumberTools.Sort(ref minY, ref maxY, out minY, out maxY);
             Max.X = maxX;
             Max.Y = maxY;
             Min.X = minX;
             Min.Y = minY;
         }
 
-        /// <summary>
-        ///     Creates a new BoundingRectangle Instance from 2 Vector2Ds.
-        /// </summary>
-        /// <param name="min">The Lower Vector2D.</param>
-        /// <param name="max">The Upper Vector2D.</param>
-        public BoundingRectangle(Vector2 min, Vector2 max) {
-            Max = max;
-            Min = min;
+        /// <summary>Initializes a new instance of the <see cref="BoundingRectangle"/> struct.</summary>
+        /// <param name="min">Corner with lower coordinates.</param>
+        /// <param name="max">Corner with upper coordinates.</param>
+        public BoundingRectangle(Vector2 min, Vector2 max) 
+            : this (min.X, min.Y, max.X, max.Y) {
         }
 
         [DataMember(Name = "min", Order = 0)]
@@ -74,27 +72,107 @@ namespace GameGeometry2D {
 
         public Vector2[] Corners() {
             return new[] {
-                Max,
-                new Vector2(Min.X, Max.Y),
                 Min,
-                new Vector2(Max.X, Min.Y)
+                new Vector2(Max.X, Min.Y),
+                Max,
+                new Vector2(Min.X, Max.Y)
             };
         }
 
-        public float GetDistance(Vector2 point) {
-            float result;
-            GetDistance(ref point, out result);
+        /// <summary>Gets the center position.</summary>
+        public Vector2 Center { get { return new Vector2(Min.X + (Max.X - Min.X) / 2, Min.Y + (Max.Y - Min.Y) / 2); } }
+
+        public float Width { get { return Max.X - Min.X; } }
+
+        public float Height { get { return Max.Y - Min.Y; } }
+
+        public Vector2 Size { get { return new Vector2(Max.X - Min.X, Max.Y - Min.Y); } }
+
+        /// <summary> Finds point the edge of the rectangle nearest to the specified point. </summary>
+        /// <param name="target">The target point.</param>
+        /// <returns>Point the edge of the rectangle nearest to the specified point.</returns>
+        public Vector2 ClosestEdgePoint(Vector2 target) {
+            Vector2 result;
+            ClosestEdgePoint(ref target, out result);
             return result;
         }
 
-        public void GetDistance(ref Vector2 point, out float result) {
-            var xDistance = Math.Abs(point.X - ((Max.X + Min.X) * .5f)) - (Max.X - Min.X) * .5f;
-            var yDistance = Math.Abs(point.Y - ((Max.Y + Min.Y) * .5f)) - (Max.Y - Min.Y) * .5f;
-            if (xDistance > 0 && yDistance > 0) {
-                result = (float) Math.Sqrt(xDistance * xDistance + yDistance * yDistance);
+        /// <summary> Finds point the edge of the rectangle nearest to the specified point. </summary>
+        /// <param name="target">The target point.</param>
+        /// <param name="closestEdgePoint">Point the edge of the rectangle nearest to the specified point.</param>
+        public void ClosestEdgePoint(ref Vector2 target, out Vector2 closestEdgePoint) {
+            float x, y;
+            NumberTools.Clamp(ref target.X, ref Min.X, ref Max.X, out x);
+            NumberTools.Clamp(ref target.Y, ref Min.Y, ref Max.Y, out y);
+
+            float dl = Math.Abs(x - Min.X);
+            float dr = Math.Abs(x - Max.X);
+            float dt = Math.Abs(y - Min.Y);
+            float db = Math.Abs(y - Max.Y);
+            float m = Math.Min(Math.Min(Math.Min(dl, dr), dt), db);
+
+            if (m.NearlyEquals(dt)) {
+                closestEdgePoint.X = x;
+                closestEdgePoint.Y = Min.Y;
+            } else if (m.NearlyEquals(db)) {
+                closestEdgePoint.X = x;
+                closestEdgePoint.Y = Max.Y;
+            } else if (m.NearlyEquals(dl)) {
+                closestEdgePoint.X = Min.X;
+                closestEdgePoint.Y = y;
             } else {
-                result = Math.Max(xDistance, yDistance);
+                closestEdgePoint.X = Max.X;
+                closestEdgePoint.Y = y;
             }
+        }
+
+        /// <summary>Gets distance from the edge to the specified point.</summary>
+        /// <param name="point">The target point.</param>
+        /// <returns>Distance from the edge to the specified point.</returns>
+        public float DistanceTo(Vector2 point) {
+            float result;
+            DistanceTo(ref point, out result);
+            return result;
+        }
+
+        public void DistanceTo(ref Vector2 point, out float distance) {
+            Vector2 offset;
+            offset.X = Math.Abs(point.X - ((Max.X + Min.X) * .5f)) - (Max.X - Min.X) * .5f;
+            offset.Y = Math.Abs(point.Y - ((Max.Y + Min.Y) * .5f)) - (Max.Y - Min.Y) * .5f;
+            if (offset.X > 0 && offset.Y > 0) {
+                distance =  (float) Math.Sqrt(offset.X * offset.X + offset.Y * offset.Y);
+            } else {
+                distance = Math.Max(offset.X, offset.Y);
+            }
+        }
+
+        /// <summary>Gets distance from the edge of this AABB to the closest edge of the specified AABB.</summary>
+        /// <param name="target">The target AABB.</param>
+        /// <param name="distance">Distance from the edge of this AABB to the closest edge of the specified AABB.
+        /// </param>
+        public void DistanceTo(ref BoundingRectangle target, out float distance) {
+            // We shrink target down to a point and expand this AABB by the extents of target, 
+            // then we can use a simple distance from AABB to point function.
+            Vector2 shrinked = target.Center;
+            BoundingRectangle expanded = this;
+            expanded.Grow(target.Width, target.Height);
+            expanded.DistanceTo(ref shrinked, out distance);
+        }
+
+        /// <summary>Clamps the specified point to be contained within the box.</summary>
+        /// <param name="target">The target point.</param>
+        /// <returns>Clamped point.</returns>
+        public Vector2 Clamp(Vector2 target) {
+            Vector2 clamped;
+            Clamp(ref target, out clamped);
+            return clamped;
+        }
+
+        /// <summary>Clamps the specified point to be contained within the box.</summary>
+        /// <param name="target">The target point.</param>
+        /// <param name="clamped">The clamped point.</param>
+        public void Clamp(ref Vector2 target, out Vector2 clamped) {
+            Vectors2.Clamp(ref target, ref Min, ref Max, out clamped);
         }
 
         public Containment Contains(Vector2 point) {
@@ -184,6 +262,22 @@ namespace GameGeometry2D {
                     result = Containment.Intersects;
                 }
             }
+        }
+
+        /// <summary> Adds to the box size while preserving its center position. </summary>
+        /// <param name="amount">Size increase.</param>
+        public void Grow(float amount) {
+            Grow(amount, amount);
+        }
+
+        /// <summary> Adds to the box size while preserving its center position. </summary>
+        /// <param name="amountX">Size increase on X axis.</param>
+        /// <param name="amountY">Size increase on Y axis.</param>
+        public void Grow(float amountX, float amountY) {
+            Min.X -= amountX / 2;
+            Min.Y -= amountY / 2;
+            Max.X += amountX / 2;
+            Max.Y += amountY / 2;
         }
 
         public float Intersects(Ray2D ray) {
@@ -438,8 +532,7 @@ namespace GameGeometry2D {
         /// <returns>The BoundingRectangle that can contain the 2 BoundingRectangles passed.</returns>
         public static BoundingRectangle FromUnion(BoundingRectangle first, BoundingRectangle second) {
             BoundingRectangle result;
-            Vector2.Max(ref first.Max, ref second.Max, out result.Max);
-            Vector2.Min(ref first.Min, ref second.Min, out result.Min);
+            FromUnion(ref first, ref second, out result);
             return result;
         }
 
@@ -457,8 +550,7 @@ namespace GameGeometry2D {
         /// <returns>The BoundingRectangle that can contain the 2 BoundingRectangles passed.</returns>
         public static BoundingRectangle FromIntersection(BoundingRectangle first, BoundingRectangle second) {
             BoundingRectangle result;
-            Vector2.Min(ref first.Max, ref second.Max, out result.Max);
-            Vector2.Max(ref first.Min, ref second.Min, out result.Min);
+            FromIntersection(ref first, ref second, out result);
             return result;
         }
 
@@ -466,6 +558,9 @@ namespace GameGeometry2D {
             out BoundingRectangle result) {
             Vector2.Min(ref first.Max, ref second.Max, out result.Max);
             Vector2.Max(ref first.Min, ref second.Min, out result.Min);
+            if (result.Min.X > result.Max.X || result.Min.Y > result.Max.Y) {
+                result.Min = result.Max = Vector2.Zero;
+            }
         }
 
         public static BoundingRectangle FromCircle(BoundingCircle circle) {
@@ -497,6 +592,12 @@ namespace GameGeometry2D {
             result.Min.X = matrix.M13 - xRadius;
             result.Max.Y = matrix.M23 + yRadius;
             result.Min.Y = matrix.M23 - yRadius;
+        }
+
+        public static void MinkowskiDifference(ref BoundingRectangle a, ref BoundingRectangle b, 
+            out BoundingRectangle result) {
+            Vector2.Subtract(ref a.Min, ref b.Max, out result.Min);
+            result.Max = new Vector2(result.Min.X + a.Width + b.Width, result.Min.Y + a.Height + b.Height);
         }
 
         public static BoundingRectangle Parse(string source) {

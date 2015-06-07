@@ -75,18 +75,28 @@ namespace GameGeometry2D {
             return current.X.EqualsZero(epsilon) && current.Y.EqualsZero(epsilon);
         }
 
-        /// <summary>Returns a signed unit vector containing axis for largest coordinate.</summary>
+        /// <summary>Returns a signed unit vector containing axis for the largest coordinate.</summary>
         public static Vector2 MajorAxis(this Vector2 current) {
             return (Math.Abs(current.X) > Math.Abs(current.Y))
                 ? new Vector2(Math.Sign(current.X), 0)
                 : new Vector2(0, Math.Sign(current.Y));
         }
 
-        /// <summary>Returns a signed unit vector containing axis for smallest coordinate.</summary>
+        /// <summary>Returns the largest coordinate out of X and Y coordinates.</summary>
+        public static float Max(this Vector2 current) {
+            return Math.Max(current.X, current.Y);
+        }
+
+        /// <summary>Returns a signed unit vector containing axis for the smallest coordinate.</summary>
         public static Vector2 MinorAxis(this Vector2 current) {
             return (Math.Abs(current.X) < Math.Abs(current.Y))
                 ? new Vector2(Math.Sign(current.X), 0)
                 : new Vector2(0, Math.Sign(current.Y));
+        }
+
+        /// <summary>Returns the smallest coordinate out of X and Y coordinates.</summary>
+        public static float Min(this Vector2 current) {
+            return Math.Min(current.X, current.Y);
         }
 
         /// <summary>

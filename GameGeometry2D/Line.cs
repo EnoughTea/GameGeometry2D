@@ -31,9 +31,10 @@ using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace GameGeometry2D {
-    [StructLayout(LayoutKind.Sequential, Size = Size), DataContract(Name = "line", Namespace = "")]
+    [StructLayout(LayoutKind.Sequential, Size = ByteSize), DataContract(Name = "line", Namespace = ""), 
+    KnownType(typeof(Vector2))]
     public struct Line : IEquatable<Line> {
-        public const int Size = (sizeof(float) * 2) + sizeof(float);
+        public const int ByteSize = (sizeof(float) * 2) + sizeof(float);
 
         /// <summary> Zero line (point at coordinate system origin). </summary>
         public static readonly Line Zero = new Line(Vector2.Zero, 0);

@@ -25,15 +25,15 @@
 
 using System;
 using System.Diagnostics.Contracts;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace GameGeometry2D {
-    [StructLayout(LayoutKind.Sequential, Size = Size), DataContract(Name = "ray", Namespace = "")]
+    [StructLayout(LayoutKind.Sequential, Size = ByteSize), DataContract(Name = "ray", Namespace = ""), 
+    KnownType(typeof(Vector2))]
     public struct Ray2D : IEquatable<Ray2D> {
-        public const int Size = (sizeof(float) * 2) * 2;
+        public const int ByteSize = (sizeof(float) * 2) * 2;
 
         /// <summary> Zero ray (point at coordinate system origin). </summary>
         public static readonly Ray2D Zero = new Ray2D(Vector2.Zero, Vector2.Zero);

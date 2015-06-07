@@ -32,9 +32,10 @@ using Microsoft.Xna.Framework;
 
 namespace GameGeometry2D {
     /// <summary> </summary>
-    [StructLayout(LayoutKind.Sequential, Size = Size), DataContract(Name = "bCircle", Namespace = "")]
+    [StructLayout(LayoutKind.Sequential, Size = ByteSize), DataContract(Name = "bCircle", Namespace = ""),
+    KnownType(typeof(Vector2))]
     public struct BoundingCircle : IEquatable<BoundingCircle> {
-        public const int Size = (sizeof(float) * 2) + sizeof(float);
+        public const int ByteSize = (sizeof(float) * 2) + sizeof(float);
 
         /// <summary> Empty bounding circle (point at coordinate system origin). </summary>
         public static readonly BoundingCircle Zero = new BoundingCircle(Vector2.Zero, 0);
@@ -72,6 +73,44 @@ namespace GameGeometry2D {
             Vector2.Subtract(ref point, ref Center, out diff);
             result = diff.Length();
             result -= Radius;
+        }
+
+        public Vector2 ClosestPointOnEdge(Vector2 p, float bias = 0f) {
+            Vector2 closest;
+            ClosestPointOnEdge(ref p, out closest, bias);
+            return closest;
+        }
+
+        public void ClosestPointOnEdge(ref Vector2 p, out Vector2 closest, float bias = 0f) {
+            Vector2 diff;
+            Vector2.Subtract(ref p, ref Center, out diff);
+            Vector2.Normalize(ref diff, out diff);
+
+            diff *= Radius - bias;
+            Vector2.Add(ref diff, ref Center, out diff);
+            closest = diff;
+        }
+
+        public void ClosestPointAndDistOnEdge(ref Vector2 p, out Vector2 point, out float distance) {
+            Vector2 d;
+            Vector2.Subtract(ref p, ref Center, out d);
+
+            float distCentre = d.Length();
+            float penetration = distCentre - Radius;
+
+            if (distCentre.EqualsZero()) {
+                d.X = Radius;
+                d.Y = 0;
+                Vector2.Add(ref Center, ref d, out d);
+                point = d;
+                distance = -Radius;
+            } else {
+                // generate point on edge
+                d *= Radius / distCentre;
+                Vector2.Add(ref d, ref Center, out d);
+                point = d;
+                distance = penetration;
+            }
         }
 
         public Containment Contains(Vector2 point) {
@@ -245,11 +284,14 @@ namespace GameGeometry2D {
         }
 
         public void Intersects(ref BoundingRectangle rect, out bool result) {
-            Vector2 proj;
-            Vector2.Clamp(ref Center, ref rect.Min, ref rect.Max, out proj);
-            float distSq;
-            Vectors2.DistanceSq(ref Center, ref proj, out distSq);
-            result = distSq <= Radius * Radius;
+            // Find the closest point to the circle within the rectangle
+            Vector2 closest;
+            Vector2.Clamp(ref Center, ref rect.Min, ref rect.Max, out closest);
+            // Calculate the distance between the circle's center and this closest point
+            float distanceSquared;
+            Vectors2.DistanceSq(ref Center, ref closest, out distanceSquared);
+            // If the distance is less than the circle's radius, an intersection occurs
+            result = (distanceSquared < Radius * Radius);
         }
 
         public void Intersects(ref BoundingCircle circle, out bool result) {

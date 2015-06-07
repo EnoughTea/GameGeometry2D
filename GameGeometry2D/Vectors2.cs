@@ -237,7 +237,7 @@ namespace GameGeometry2D {
         }
 
         public static void RightNormal(ref Vector2 source, out Vector2 result) {
-            var sourceX = source.X;
+            float sourceX = source.X;
             result.X = -source.Y;
             result.Y = sourceX;
         }

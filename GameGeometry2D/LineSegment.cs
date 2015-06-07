@@ -30,24 +30,30 @@ using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace GameGeometry2D {
-    [StructLayout(LayoutKind.Sequential, Size = Size), DataContract(Name = "lineSeg", Namespace = "")]
+    [StructLayout(LayoutKind.Sequential, Size = ByteSize), DataContract(Name = "lineSeg", Namespace = ""), 
+    KnownType(typeof(Vector2))]
     public struct LineSegment : IEquatable<LineSegment> {
-        public const int Size = (sizeof(float) * 2) * 2;
+        public const int ByteSize = (sizeof(float) * 2) * 2;
 
         /// <summary> Zero line segment (point at coordinate system origin). </summary>
         public static readonly LineSegment Zero = new LineSegment(Vector2.Zero, Vector2.Zero);
 
-        public LineSegment(Vector2 vertex1, Vector2 vertex2) {
-            Vertex1 = vertex1;
-            Vertex2 = vertex2;
+        public LineSegment(Vector2 start, Vector2 end) {
+            Start = start;
+            End = end;
         }
 
-        [DataMember(Name = "v1", Order = 0)]
-        public Vector2 Vertex1;
+        [DataMember(Name = "s", Order = 0)]
+        public Vector2 Start;
 
-        [DataMember(Name = "v2", Order = 1)]
-        public Vector2 Vertex2;
+        [DataMember(Name = "e", Order = 1)]
+        public Vector2 End;
 
+        public void Lerp(float t, out Vector2 point) {
+            Vector2.Subtract(ref End, ref Start, out point);
+            Vector2.Multiply(ref point, t, out point);
+            Vector2.Add(ref Start, ref point, out point);
+        }
 
         public float GetDistance(Vector2 point) {
             float result;
@@ -56,7 +62,7 @@ namespace GameGeometry2D {
         }
 
         public void GetDistance(ref Vector2 point, out float result) {
-            GetDistance(ref Vertex1, ref Vertex2, ref point, out result);
+            GetDistance(ref Start, ref End, ref point, out result);
         }
 
         public float Intersects(Ray2D ray) {
@@ -66,18 +72,18 @@ namespace GameGeometry2D {
         }
 
         public void Intersects(ref Ray2D ray, out float result) {
-            Intersects(ref Vertex1, ref Vertex2, ref ray, out result);
+            Intersects(ref Start, ref End, ref ray, out result);
         }
 
 
         /// <summary>Returns a <see cref="System.String" /> that represents this instance.</summary>
         /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         public override string ToString() {
-            return "(" + Vertex1.Format() + ") ↔ (" + Vertex2.Format() + ")";
+            return "(" + Start.Format() + ") ↔ (" + End.Format() + ")";
         }
 
         public override int GetHashCode() {
-            return Vertex1.GetHashCode() ^ Vertex2.GetHashCode();
+            return Start.GetHashCode() ^ End.GetHashCode();
         }
 
         public override bool Equals(object obj) {
@@ -135,12 +141,13 @@ namespace GameGeometry2D {
                     float distanceFromSecond;
                     Vector2.Dot(ref intersectPos, ref tangent, out distanceFromSecond);
 
-                    if (distanceFromSecond >= 0 && distanceFromSecond <= edgeMagnitude) {
+                    if (distanceFromSecond >= 0 && distanceFromSecond <= edgeMagnitude) {   // Hit!
                         result = distanceFromOrigin;
                         return;
                     }
                 }
             }
+            // No hit.
             result = -1;
         }
 
@@ -191,8 +198,8 @@ namespace GameGeometry2D {
 
         [CLSCompliant(false)]
         public static bool Equals(ref LineSegment line1, ref LineSegment line2) {
-            return Vectors2.Equals(ref line1.Vertex1, ref line2.Vertex1) &&
-                   Vectors2.Equals(ref line1.Vertex2, ref line2.Vertex2);
+            return Vectors2.Equals(ref line1.Start, ref line2.Start) &&
+                   Vectors2.Equals(ref line1.End, ref line2.End);
         }
 
         public static LineSegment Parse(string source) {
@@ -207,7 +214,7 @@ namespace GameGeometry2D {
         }
 
         public static bool TryParse(string source, out LineSegment result) {
-            bool validParse = NumberTools.ParseTwoVectors(source, out result.Vertex1, out result.Vertex2);
+            bool validParse = NumberTools.ParseTwoVectors(source, out result.Start, out result.End);
             if (validParse) { return true; }
 
             result = Zero;
