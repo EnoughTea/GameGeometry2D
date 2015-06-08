@@ -1,6 +1,6 @@
 ﻿# Basic game geometry lib for MonoGame
 
-It is based on part of 'Physics2D.Net' library, which deals with 2D geometry for games like rectangle intersections and such. 
+It is based on part of [Physics2D.Net](http://code.google.com/p/physics2d/) library, which deals with 2D geometry for games like rectangle intersections and such. 
 
 Lots of changes were made in process, but most of the time things should behave the same. There are few exceptions, like 
 `BoundingRectangle.FromIntersection` method — for disjointed rectangles it returns `BoundingRectangle.Empty` now as opposed to negative sized rectangle. As for API itself, it is pretty self-explaining: methods do what you expect them to do based on their name (I hope).
