@@ -192,6 +192,29 @@ namespace GameGeometry2D {
             }
         }
 
+        /// <summary>Finds how the specified point is positioned relative to the line through <paramref name="a"/> and 
+        /// <paramref name="b"/>. </summary>
+        /// <param name="a">First line-defining point.</param>
+        /// <param name="b">Second line-defining point.</param>
+        /// <param name="target">The point which position to calculate.</param>
+        /// <returns>&gt;0 for <paramref name="target"/> left of the line.
+        /// =0 for <paramref name="target"/> on the line.
+        /// &lt; 0 for <paramref name="target"/> right of the line.</returns>
+        public static double RelativePosition(ref Vector2 a, ref Vector2 b, ref Vector2 target) {
+            return (b.X - a.X) * (target.Y - a.Y) - (target.X - a.X) * (b.Y - a.Y);
+        }
+
+        /// <summary>Finds how the specified point is positioned relative to the line going through given line segment.
+        /// </summary>
+        /// <param name="line">Line segmenet defining the line.</param>
+        /// <param name="target">The point which position to calculate.</param>
+        /// <returns>&gt;0 for <paramref name="target"/> left of the line.
+        /// =0 for <paramref name="target"/> on the line.
+        /// &lt; 0 for <paramref name="target"/> right of the line.</returns>
+        public static double RelativePosition(ref LineSegment line, ref Vector2 target) {
+            return RelativePosition(ref line.Start, ref line.End, ref target);
+        }
+
         public static bool Equals(LineSegment line1, LineSegment line2) {
             return Equals(ref line1, ref line2);
         }
