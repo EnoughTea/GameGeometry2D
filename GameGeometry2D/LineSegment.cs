@@ -123,7 +123,7 @@ namespace GameGeometry2D {
             float edgeMagnitude;
             Vector2.Subtract(ref vertex1, ref vertex2, out tangent);
             Vectors2.Normalize(ref tangent, out edgeMagnitude, out tangent);
-            Vectors2.RightNormal(ref tangent, out normal);
+            Vectors2.RightPerp(ref tangent, out normal);
 
             float dir;
             Vector2.Dot(ref normal, ref ray.Direction, out dir);

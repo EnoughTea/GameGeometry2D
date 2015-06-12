@@ -35,5 +35,13 @@ namespace GameGeometry2D {
             var diff = Math.Abs(a - b);
             return diff <= epsilon;
         }
+
+        /// <summary> Finds only the fractional component of a number: always positive. </summary>
+        /// <param name="self">The number whose fractional component to get.</param>
+        /// <returns>The fractional component of a number: always positive.</returns>
+        public static float Frac(this float self) {
+            float abs = Math.Abs(self);
+            return abs - (float) Math.Floor(abs);
+        }
     }
 }

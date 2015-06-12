@@ -210,13 +210,13 @@ namespace GameGeometry2D {
         /// <remarks>
         ///     <seealso href="http://en.wikipedia.org/wiki/Right-hand_rule#Left-hand_rule" />
         /// </remarks>
-        public static Vector2 LeftNormal(Vector2 source) {
+        public static Vector2 LeftPerp(Vector2 source) {
             Vector2 result;
-            LeftNormal(ref source, out result);
+            LeftPerp(ref source, out result);
             return result;
         }
 
-        public static void LeftNormal(ref Vector2 source, out Vector2 result) {
+        public static void LeftPerp(ref Vector2 source, out Vector2 result) {
             var sourceX = source.X;
             result.X = source.Y;
             result.Y = -sourceX;
@@ -230,13 +230,13 @@ namespace GameGeometry2D {
         /// <remarks>
         ///     <seealso href="http://en.wikipedia.org/wiki/Right-hand_rule" />
         /// </remarks>
-        public static Vector2 RightNormal(Vector2 source) {
+        public static Vector2 RightPerp(Vector2 source) {
             Vector2 result;
-            RightNormal(ref source, out result);
+            RightPerp(ref source, out result);
             return result;
         }
 
-        public static void RightNormal(ref Vector2 source, out Vector2 result) {
+        public static void RightPerp(ref Vector2 source, out Vector2 result) {
             float sourceX = source.X;
             result.X = -source.Y;
             result.Y = sourceX;
@@ -426,21 +426,22 @@ namespace GameGeometry2D {
              return !(((((c - b) ^ (point - c)) >= 0) ^ bClockwise) && ((((a - c) ^ (point - a)) >= 0) ^ bClockwise));*/
         }
 
-        /// <summary>
-        ///     Thie Projects the left Vector2 onto the Right Vector2.
-        /// </summary>
-        /// <param name="left">The left Vector2 operand.</param>
-        /// <param name="right">The right Vector2 operand.</param>
-        /// <returns>The Projected Vector2.</returns>
-        /// <remarks>
-        ///     <seealso href="http://en.wikipedia.org/wiki/Projection_%28linear_algebra%29" />
-        /// </remarks>
+        /// <summary>Projects <paramref name="left"/> vector onto the <paramref name="right"/> vector.</summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Projected vector.</returns>
+        /// <remarks><seealso href="http://en.wikipedia.org/wiki/Projection_%28linear_algebra%29" /></remarks>
         public static Vector2 Project(Vector2 left, Vector2 right) {
             Vector2 result;
             Project(ref left, ref right, out result);
             return result;
         }
 
+        /// <summary>Projects <paramref name="left"/> vector onto the <paramref name="right"/> vector.</summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <param name="result">Projected vector.</param>
+        /// <remarks><seealso href="http://en.wikipedia.org/wiki/Projection_%28linear_algebra%29" /></remarks>
         public static void Project(ref Vector2 left, ref Vector2 right, out Vector2 result) {
             float tmp;
             Vector2.Dot(ref left, ref right, out tmp);
@@ -449,9 +450,7 @@ namespace GameGeometry2D {
             Vector2.Multiply(ref right, tmp, out result);
         }
 
-        /// <summary>
-        ///     Does a "2D" Cross Product also know as an Outer Product.
-        /// </summary>
+        /// <summary>Does a 2D Cross Product also know as an Outer Product.</summary>
         /// <param name="left">The left Vector2 operand.</param>
         /// <param name="right">The right Vector2 operand.</param>
         /// <returns>The Z value of the resulting vector.</returns>
@@ -477,7 +476,7 @@ namespace GameGeometry2D {
             result = left.X * right.Y - left.Y * right.X;
         }
 
-        /// <summary> Does a "2D" Cross Product also know as an Outer Product. </summary>
+        /// <summary> Does a 2D Cross Product also know as an Outer Product. </summary>
         /// <param name="leftZ">The Z value of the left vector operand.</param>
         /// <param name="right">The right Vector2 operand.</param>
         /// <returns>The Vector2 that fully represents the resulting vector.</returns>
